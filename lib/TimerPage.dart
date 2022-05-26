@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:pomodoro/NavBar.dart';
 import 'package:pomodoro/main.dart';
 
+import 'button_widget.dart';
+
 class TimerPage extends StatefulWidget{
   @override
   _TimerPageState createState() => _TimerPageState();
@@ -19,7 +21,7 @@ class _TimerPageState extends State<TimerPage>{
   void initState(){
     super.initState();
 
-    startTimer();
+    //startTimer();
     reset();
   }
    void reset() {
@@ -33,7 +35,7 @@ class _TimerPageState extends State<TimerPage>{
     final addSeconds = isCountdown ? -1: 1;
     setState(() {
       final seconds = duration.inSeconds+addSeconds;
-        if(seconds<0){
+      if(seconds<0){
         timer?.cancel();
 
       duration = Duration(seconds: seconds);}
@@ -42,19 +44,71 @@ class _TimerPageState extends State<TimerPage>{
       }
     });
   }
-  void startTimer(){
+  void startTimer({bool resets = true}){
+    if(resets){
+      reset();
+    }
     timer = Timer.periodic(Duration(seconds: 1),(_)=>addTime());
+  }
+  void stopTimer({bool resets = true}){
+    if(resets){
+      reset();
+    }
+
+    setState(()=>timer?.cancel());
   }
   @override
   Widget build(BuildContext context)=>Scaffold(
-    body:Center(child:buildTime()),
+    body:Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children:[
+          buildTime(),
+          const SizedBox(height: 80,),
+          buildButtons(),
+      ],
+     ),
+    ),
     drawer: NavBar(),
     appBar: AppBar(
       title: Text('Timer'),
       centerTitle: true,
     ),
-
   ); 
+  Widget buildButtons(){
+    final isRunning = timer == null ? false : timer!.isActive;
+    final isCompleted = duration.inSeconds == 0;
+
+    return isRunning || !isCompleted
+      ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ButtonWidget(
+              text: isRunning ? 'STOP':'RESUME',
+              onClicked:(){
+                if(isRunning){
+                  stopTimer(resets:false);
+                }else{
+                  startTimer(resets:false);
+                }
+              },
+            ),
+            const SizedBox(width: 12),
+            ButtonWidget(
+              text:'CANCEL',
+              onClicked:stopTimer,
+            ),
+          ],
+      )
+      :   ButtonWidget(
+          text:'Start Timer!',
+
+          onClicked:(){
+            startTimer();
+          },
+        );
+  }
+
   Widget buildTime(){
     String twoDigits(int n) => n.toString().padLeft(2,'0');
     final hours = twoDigits(duration.inHours);
@@ -97,6 +151,8 @@ class _TimerPageState extends State<TimerPage>{
     Text(header),
    ]
   );
+  
+  
   
  
 }
