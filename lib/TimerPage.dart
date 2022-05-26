@@ -33,8 +33,13 @@ class _TimerPageState extends State<TimerPage>{
     final addSeconds = isCountdown ? -1: 1;
     setState(() {
       final seconds = duration.inSeconds+addSeconds;
+        if(seconds<0){
+        timer?.cancel();
 
-      duration = Duration(seconds: seconds);
+      duration = Duration(seconds: seconds);}
+      else{
+        duration = Duration(seconds: seconds);
+      }
     });
   }
   void startTimer(){
